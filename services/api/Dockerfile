@@ -6,10 +6,12 @@ FROM python:3.12-slim AS builder
 RUN apt-get update \
  && apt-get install -y --no-install-recommends build-essential \
  && rm -rf /var/lib/apt/lists/*
-ENV PIP_NO_CACHE_DIR=1 PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=5
+# Tahan koneksi putus: ulangi unduhan, dan simpan unduhan di cache build.
+ENV PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=5
 WORKDIR /wheels
 COPY requirements.txt .
-RUN pip wheel --wheel-dir /wheels -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip wheel --wheel-dir /wheels -r requirements.txt
 
 # --- Tahap 2: image akhir tanpa compiler
 FROM python:3.12-slim

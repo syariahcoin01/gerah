@@ -57,6 +57,11 @@ make release TAG=0.1.0        # build api+web → tes → push :0.1.0 dan :lates
 Atau otomatis lewat GitHub Actions: `git tag v0.1.0 && git push --tags`
 → image `ghcr.io/<owner>/gerah-api` dan `gerah-web` untuk amd64 + arm64.
 
+CI di GitHub:
+- **Setiap push/PR ke `main`**: hanya tes backend + cek TypeScript (±3 menit).
+- **Tag `v*`** (atau `gh workflow run "Build & push images"`): tes lalu build & push image (±15 menit).
+  Dengan begitu kuota GitHub Actions akun gratis tidak cepat habis.
+
 Di server (cukup salin `docker-compose.yml`, `proxy/`, `.env`):
 
 ```bash
