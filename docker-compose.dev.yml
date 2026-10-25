@@ -1,0 +1,21 @@
+# Override untuk pengembangan:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# - API auto-reload saat kode Python berubah
+# - Postgres & API terbuka di host untuk debugging
+# - Mode demo aktif bila API cuaca luar tidak terjangkau
+services:
+  db:
+    ports: ["5432:5432"]
+  api:
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    volumes:
+      - ./services/api/app:/app/app
+    ports: ["8000:8000"]
+    environment:
+      GERAH_DEMO_FALLBACK: "true"
+  worker:
+    volumes:
+      - ./services/api/app:/app/app
+    environment:
+      GERAH_DEMO_FALLBACK: "true"
+      GERAH_INGEST_INTERVAL_MIN: "15"

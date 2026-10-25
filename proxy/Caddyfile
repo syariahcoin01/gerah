@@ -1,0 +1,19 @@
+# SITE_ADDRESS=:80                 → HTTP biasa (lokal / di belakang load balancer kampus)
+# SITE_ADDRESS=gerah.domain.ac.id  → HTTPS otomatis (Let's Encrypt), buka port 80/443
+{$SITE_ADDRESS}
+
+encode zstd gzip
+
+handle_path /api/* {
+	reverse_proxy api:8000
+}
+
+handle {
+	reverse_proxy web:80
+}
+
+header {
+	X-Content-Type-Options nosniff
+	Referrer-Policy strict-origin-when-cross-origin
+	-Server
+}

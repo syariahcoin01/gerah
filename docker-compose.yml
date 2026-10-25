@@ -1,0 +1,79 @@
+# Gerah — stack produksi/staging
+#   docker compose up -d --build        # bangun & jalankan lokal
+#   make release TAG=0.1.0              # build + push ke registry
+#
+# Image yang di-push: ${REGISTRY}/gerah-api:${TAG} dan ${REGISTRY}/gerah-web:${TAG}
+name: gerah
+
+x-api-env: &api-env
+  GERAH_DATABASE_URL: postgresql://${POSTGRES_USER:-gerah}:${POSTGRES_PASSWORD:-gerah}@db:5432/${POSTGRES_DB:-gerah}
+  GERAH_CORS_ORIGINS: ${CORS_ORIGINS:-*}
+  GERAH_INGEST_INTERVAL_MIN: ${INGEST_INTERVAL_MIN:-60}
+  GERAH_DEMO_FALLBACK: ${DEMO_FALLBACK:-false}
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gerah}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gerah}
+      POSTGRES_DB: ${POSTGRES_DB:-gerah}
+      TZ: Asia/Jakarta
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gerah} -d ${POSTGRES_DB:-gerah}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    image: ${REGISTRY:-ghcr.io/prodi-si-widyatama}/gerah-api:${TAG:-latest}
+    build:
+      context: ./services/api
+    restart: unless-stopped
+    environment: *api-env
+    depends_on:
+      db: { condition: service_healthy }
+
+  worker:
+    # image yang sama dengan api, beda perintah → cukup satu push
+    image: ${REGISTRY:-ghcr.io/prodi-si-widyatama}/gerah-api:${TAG:-latest}
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+    environment: *api-env
+    healthcheck:
+      disable: true
+    depends_on:
+      db: { condition: service_healthy }
+      api: { condition: service_started }
+
+  web:
+    image: ${REGISTRY:-ghcr.io/prodi-si-widyatama}/gerah-web:${TAG:-latest}
+    build:
+      context: ./apps/mobile
+      args:
+        EXPO_PUBLIC_API_URL: ${WEB_API_URL:-/api}
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

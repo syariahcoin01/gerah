@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "Gerah",
+    "slug": "gerah",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "gerah",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "id.ac.widyatama.si.gerah",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Gerah memakai lokasi Anda untuk memilih kelurahan terdekat. Koordinat tidak dikirim ke server."
+      }
+    },
+    "android": {
+      "package": "id.ac.widyatama.si.gerah",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFF4E5",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "POST_NOTIFICATIONS"],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Gerah — Penasihat Heat Stress",
+      "shortName": "Gerah",
+      "themeColor": "#F07A1A",
+      "backgroundColor": "#FFF8EF"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Gerah memakai lokasi Anda untuk memilih kelurahan terdekat. Koordinat tidak dikirim ke server."
+        }
+      ],
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F07A1A",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false,
+      "reactCompiler": true
+    }
+  }
+}
