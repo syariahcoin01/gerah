@@ -6,6 +6,7 @@ import { Button, Card, Choice, H1, H2, P, Screen, Toggle } from '../components/u
 import { fetchLocations, Location, nearestLocal } from '../lib/api';
 import { Group, GROUPS, roleInfo, ROLES } from '../lib/roles';
 import { loadSettings, Role, saveSettings, Settings } from '../lib/storage';
+import { font } from '../lib/fonts';
 import { C } from '../lib/theme';
 
 const MAX_RESULTS = 12;
@@ -96,8 +97,8 @@ export default function Onboarding() {
         placeholderTextColor={C.muted}
         autoCorrect={false}
         style={{
-          borderWidth: 2, borderColor: C.line, borderRadius: 12, padding: 12,
-          fontSize: 16, backgroundColor: C.card, color: C.ink,
+          borderWidth: 2, borderColor: C.line, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 18,
+          fontSize: 16, backgroundColor: C.cardSolid, color: C.ink, fontFamily: font('500').fontFamily,
         }}
       />
       {loc ? (

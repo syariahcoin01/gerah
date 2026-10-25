@@ -4,7 +4,9 @@ import { Card, H2, P, Screen } from '../components/ui';
 import { dayLabel, fetchForecast, Forecast, hourLabel, personalLevel } from '../lib/api';
 import { timelineText } from '../lib/roles';
 import { loadSettings, Settings } from '../lib/storage';
-import { C, levelInfo } from '../lib/theme';
+import { font } from '../lib/fonts';
+import { wibHour } from '../lib/summary';
+import { C, levelInfo, weatherIcon } from '../lib/theme';
 
 export default function Timeline() {
   const [st, setSt] = useState<Settings | null>(null);
@@ -32,13 +34,18 @@ export default function Timeline() {
           <View key={h.ts} style={{ gap: 6 }}>
             {header}
             <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 }}>
-              <Text style={{ width: 52, fontWeight: '700', color: C.ink }}>{hourLabel(h.ts)}</Text>
+              <View style={{ width: 52, alignItems: 'center' }}>
+                <Text style={{ color: C.ink, ...font('700') }}>{hourLabel(h.ts)}</Text>
+                <Text style={{ fontSize: 22 }} accessibilityLabel={h.weather ?? undefined}>
+                  {weatherIcon(h.weather, wibHour(h.ts) < 6 || wibHour(h.ts) >= 18)}
+                </Text>
+              </View>
               <View style={{ width: 10, alignSelf: 'stretch', borderRadius: 5, backgroundColor: info.color }} />
               <View style={{ flex: 1 }}>
-                <Text style={{ fontWeight: '800', color: info.color }}>
+                <Text style={{ color: info.color, ...font('800') }}>
                   {info.label} · WBGT {h.wbgt_matahari ?? '–'}° <Text style={{ color: C.muted, fontWeight: '400' }}>(teduh {h.wbgt_teduh ?? '–'}°)</Text>
                 </Text>
-                <Text style={{ color: C.ink }}>{timelineText(st.role, lvl)}</Text>
+                <Text style={{ color: C.ink, ...font('600') }}>{timelineText(st.role, lvl)}</Text>
                 <Text style={{ color: C.muted, fontSize: 12 }}>
                   {h.t ?? '–'}°C · RH {h.rh ?? '–'}% · UV {h.uv?.value ?? '–'} {h.weather ? `· ${h.weather}` : ''}
                 </Text>
