@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import math
 from contextlib import asynccontextmanager
+from datetime import datetime, time, timedelta
 from typing import Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from . import db
 from .config import settings
 from .heat import heat_index_c
+from .heatmap import HOURS, build_map
 from .risk import (DISCLAIMER, LEVELS, ROLES, THRESHOLDS, advice, level_for, normalize_role,
                    table_for, uv_category)
 
@@ -31,6 +34,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Gerah API", version="0.1.0", root_path="/api", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins.split(","),
                    allow_methods=["GET"], allow_headers=["*"])
+app.add_middleware(GZipMiddleware, minimum_size=2000)
 
 
 def _r(x, n=1):
@@ -136,6 +140,34 @@ def weekly(adm4: str, role: str = "mandor", workload: str | None = None):
         lvl = level_for(r["wbgt_sun"], role, workload)
         days.setdefault(d, {str(i): 0 for i in range(1, 6)})[str(lvl)] += 1
     return {"adm4": adm4, "hari": days, "catatan": "Jumlah jam kerja (07.00–17.00 WIB) per level"}
+
+
+@app.get("/v1/map")
+def heat_map(
+    role: str = "umum",
+    workload: Literal["ringan", "sedang", "berat", "sangat_berat"] | None = None,
+    acclimatized: bool = True,
+):
+    """Level panas semua kelurahan per jam 07–17 WIB, hari ini & besok (untuk peta)."""
+    role = normalize_role(role)
+    tz = ZoneInfo(settings.timezone)
+    today = datetime.now(tz).date()
+    start = datetime.combine(today, time(0), tz)
+    with db.get_pool().connection() as conn:
+        adm4s = [r["adm4"] for r in conn.execute("SELECT adm4 FROM locations ORDER BY adm4").fetchall()]
+        rows = conn.execute(
+            """SELECT adm4, ts, wbgt_sun FROM forecast_hourly
+               WHERE ts >= %s AND ts < %s
+                 AND extract(hour FROM ts AT TIME ZONE %s) BETWEEN 7 AND 17""",
+            (start, start + timedelta(days=2), settings.timezone)).fetchall()
+        last = conn.execute("SELECT max(computed_at) AS last FROM forecast_hourly").fetchone()["last"]
+    return {
+        "peran": role, "beban_kerja": workload or ROLES[role]["workload"],
+        "jam": HOURS, "hari": build_map(rows, adm4s, today, settings.timezone, role, workload, acclimatized),
+        "diperbarui": last.isoformat() if last else None,
+        "label": "Estimasi model WBGT di bawah matahari (bukan pengukuran)",
+        "attribution": ATTRIBUTION,
+    }
 
 
 @app.get("/v1/heat-index")

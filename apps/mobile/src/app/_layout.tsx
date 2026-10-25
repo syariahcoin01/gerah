@@ -41,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ title: 'Gerah', headerLeft: () => null }} />
         <Stack.Screen name="beranda" options={{ title: 'Gerah', headerLeft: () => null }} />
         <Stack.Screen name="timeline" options={{ title: 'Timeline per jam' }} />
+        <Stack.Screen name="peta" options={{ title: 'Peta panas Bandung' }} />
         <Stack.Screen name="checklist" options={{ title: 'Checklist mandor' }} />
         <Stack.Screen name="p3k" options={{ title: 'Gejala & P3K panas' }} />
         <Stack.Screen name="laporan" options={{ title: 'Laporan mingguan' }} />

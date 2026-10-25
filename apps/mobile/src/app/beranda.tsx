@@ -220,6 +220,7 @@ export default function Beranda() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           {[
             ['/timeline', '🕒 Timeline per jam'],
+            ['/peta', '🗺️ Peta panas kota'],
             ...(roleInfo(st.role).teamTools ? [['/checklist', '✅ Checklist mandor'], ['/laporan', '📊 Laporan mingguan']] : []),
             ['/p3k', '🩺 Gejala & P3K'],
             ['/profil', '⚙️ Pengaturan'],

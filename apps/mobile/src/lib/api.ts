@@ -72,6 +72,36 @@ export async function fetchForecast(s: Settings): Promise<{ data: Forecast; stal
   }
 }
 
+export type HeatMapDay = {
+  tanggal: string;
+  ada_data: boolean;
+  data: Record<string, { w: (number | null)[]; l: number[] }>;
+};
+export type HeatMap = {
+  peran: string;
+  beban_kerja: string;
+  jam: number[];
+  hari: HeatMapDay[];
+  diperbarui: string | null;
+  label: string;
+  attribution: { name: string; url: string; use: string }[];
+};
+
+/** Level semua kelurahan per jam (07–17) hari ini & besok; cache untuk offline. */
+export async function fetchHeatMap(s: Settings): Promise<{ data: HeatMap; stale: boolean }> {
+  const q = new URLSearchParams({ role: s.role ?? 'umum', workload: s.workload, acclimatized: String(s.acclimatized) });
+  const key = `map.${q.toString()}`;
+  try {
+    const data = await getJSON<HeatMap>(`/v1/map?${q}`);
+    await cacheSet(key, data);
+    return { data, stale: false };
+  } catch (e) {
+    const cached = await cacheGet<HeatMap>(key);
+    if (cached) return { data: cached, stale: true };
+    throw e;
+  }
+}
+
 /** Penyesuaian pribadi — dihitung di perangkat, tidak dikirim ke server. */
 export function personalLevel(level: number, s: Settings): number {
   if (!level) return 0;
