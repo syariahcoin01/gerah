@@ -3,7 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Sky } from '../components/sky';
-import { Button, Card, H2, P, s } from '../components/ui';
+import { Button, Card, H2, P, s, SpeakButton } from '../components/ui';
+import { nowText, tomorrowText } from '../lib/spoken';
 import { fetchForecast, Forecast, hourLabel, personalLevel } from '../lib/api';
 import { remindersSupported, scheduleFromForecast } from '../lib/reminders';
 import { roleInfo } from '../lib/roles';
@@ -131,6 +132,10 @@ export default function Beranda() {
               <Text style={[b.heroWbgt, { color: onSky }, textShadow]}>
                 WBGT {now.wbgt_matahari ?? '–'}° di bawah matahari, {now.wbgt_teduh ?? '–'}° di teduh
               </Text>
+              <View style={{ marginTop: 6 }}>
+                <SpeakButton id="sekarang" light={dark} label={st.lang === 'su' ? 'Dangukeun' : 'Dengarkan'}
+                  text={() => nowText(f!, st, lvl)} />
+              </View>
             </View>
 
             <Card style={b.metrics}>
@@ -198,6 +203,8 @@ export default function Beranda() {
                     </P>
                   ) : null}
                   <P>✅ {heavyAdvice(d)}</P>
+                  <SpeakButton id="besok" label={st.lang === 'su' ? 'Dangukeun' : 'Dengarkan'}
+                    text={() => tomorrowText(d, st)} />
                   <Button title="📤 Bagikan jadwal besok" kind="ghost" onPress={() => share('besok')} />
                   <Text style={{ color: C.muted, fontSize: 12 }}>
                     {remindersSupported

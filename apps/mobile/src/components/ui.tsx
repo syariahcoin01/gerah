@@ -1,8 +1,32 @@
 import { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View, ViewStyle } from 'react-native';
 import { font } from '../lib/fonts';
+import { useSpeaker } from '../lib/speech';
 import { C, Mood } from '../lib/theme';
 import { Sky } from './sky';
+
+/** Tombol 🔊 yang membacakan teks; ketuk lagi untuk berhenti. */
+export function SpeakButton({ id, text, label = 'Dengarkan', light }: {
+  id: string; text: string | (() => string); label?: string; light?: boolean;
+}) {
+  const { speaking, toggle } = useSpeaker(id);
+  const fg = light ? '#FFFFFF' : C.ink;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={speaking ? 'Hentikan suara' : `${label}: bacakan dengan suara`}
+      onPress={() => toggle(typeof text === 'function' ? text() : text)}
+      hitSlop={8}
+      style={({ pressed }) => [s.speak, {
+        borderColor: light ? 'rgba(255,255,255,0.85)' : C.line,
+        backgroundColor: speaking ? C.accent : light ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.9)',
+      }, pressed && { opacity: 0.7 }]}>
+      <Text style={[s.speakText, { color: speaking ? '#FFFFFF' : fg }]}>
+        {speaking ? '⏹ Berhenti' : `🔊 ${label}`}
+      </Text>
+    </Pressable>
+  );
+}
 
 /** Layar standar: langit lembut di belakang, isi dalam kolom selebar maks 560. */
 export function Screen({ children, mood = 'soft' }: { children: ReactNode; mood?: Mood }) {
@@ -85,4 +109,6 @@ export const s = StyleSheet.create({
   choiceLabel: { fontSize: 16, color: C.ink, ...font('700') },
   choiceDesc: { fontSize: 13, lineHeight: 18, color: C.muted, marginTop: 2, ...font('400') },
   toggle: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
+  speak: { alignSelf: 'flex-start', borderRadius: 999, borderWidth: 1.5, paddingVertical: 8, paddingHorizontal: 14, minHeight: 40, justifyContent: 'center' },
+  speakText: { fontSize: 15, ...font('700') },
 });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import { Card, H2, P, Screen } from '../components/ui';
+import { Card, H2, P, Screen, SpeakButton } from '../components/ui';
 import { loadSettings } from '../lib/storage';
 
 // Teks Sunda adalah draf: wajib divalidasi penutur asli sebelum rilis.
@@ -50,6 +50,8 @@ export default function P3K() {
           {su ? <P muted>{st.signSu}</P> : null}
           <P><Text style={{ fontWeight: '700' }}>Lakukan: </Text>{st.act}</P>
           {su ? <P muted>{st.actSu}</P> : null}
+          <SpeakButton id={`p3k-${st.title}`} label={su ? 'Dangukeun' : 'Dengarkan'}
+            text={su ? `${st.su}. ${st.signSu} ${st.actSu}` : `${st.title}. Tanda: ${st.sign} Lakukan: ${st.act}`} />
         </Card>
       ))}
       <Card>
